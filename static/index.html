@@ -45,17 +45,17 @@
 </head>
 
 <body class="bg-gray-50">
-  <div id="app" v-cloak class="w-full min-h-screen flex flex-col">
+  <div id="app" v-cloak class="flex flex-col w-full min-h-screen">
     <header class="bg-white shadow">
-      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <div class="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <h1 class="text-3xl font-bold text-gray-900">
           Crawl4AI Web Crawler
         </h1>
       </div>
     </header>
 
-    <main class="w-full max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 flex-grow">
-      <div class="bg-white shadow rounded-lg p-6 mb-6">
+    <main class="flex-grow w-full py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
+      <div class="p-6 mb-6 bg-white rounded-lg shadow">
         <form @submit.prevent="startCrawl" class="space-y-4">
           <div>
             <label for="url" class="block text-sm font-medium text-gray-700">
@@ -63,7 +63,7 @@
             </label>
             <div class="mt-1">
               <input type="url" name="url" id="url" v-model="url" required
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                class="block w-full p-3 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 placeholder="https://example.com" aria-label="Enter website URL to crawl">
             </div>
           </div>
@@ -74,7 +74,7 @@
             </label>
             <div class="mt-1">
               <input type="number" name="limit" id="limit" v-model="limit" min="1" max="70"
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                class="block w-full p-3 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 aria-label="Set maximum number of pages to crawl">
             </div>
             <p class="mt-1 text-sm text-gray-500">
@@ -84,7 +84,7 @@
 
           <div>
             <button type="submit" :disabled="crawling"
-              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              class="flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
               aria-label="Start crawling website">
               {{ crawling ? 'Crawling...' : 'Start Crawling' }}
             </button>
@@ -92,8 +92,8 @@
         </form>
       </div>
 
-      <div v-if="jobStatus" class="bg-white shadow rounded-lg p-6" role="status" aria-live="polite">
-        <h2 class="text-lg font-medium text-gray-900 mb-4">
+      <div v-if="jobStatus" class="p-6 bg-white rounded-lg shadow" role="status" aria-live="polite">
+        <h2 class="mb-4 text-lg font-medium text-gray-900">
           Crawl Status
         </h2>
 
@@ -129,7 +129,7 @@
 
         <div v-if="jobStatus.status === 'completed'" class="mt-4">
           <button @click="downloadResults"
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             aria-label="Download crawl results">
             Download Results
           </button>
@@ -137,9 +137,9 @@
       </div>
     </main>
 
-    <footer class="bg-white shadow mt-auto">
-      <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-        <p class="text-center text-sm text-gray-500">
+    <footer class="mt-auto bg-white shadow">
+      <div class="px-4 py-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <p class="text-sm text-center text-gray-500">
           © 2024 Crawl4AI. All rights reserved.
         </p>
       </div>

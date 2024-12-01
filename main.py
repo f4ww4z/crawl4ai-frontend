@@ -10,6 +10,7 @@ from typing import Optional, Dict
 from crawl4ai import AsyncWebCrawler
 import uuid
 import aiofiles
+from urllib.parse import urlparse, unquote
 
 app = FastAPI()
 
@@ -30,7 +31,35 @@ class CrawlResponse(BaseModel):
     total_pages: int = 0
     current_url: Optional[str] = None
 
-async def process_url(url: str, output_dir: str, crawler: AsyncWebCrawler):
+def clean_path(url: str, base_url: str) -> str:
+    """Extract and clean the path from URL relative to base URL"""
+    # URL decode both URLs to handle any encoded characters
+    url = unquote(url)
+    base_url = unquote(base_url)
+    
+    # Remove base URL to get the relative path
+    path = url.replace(base_url, '')
+    
+    # If path starts with /, remove it
+    path = path.lstrip('/')
+    
+    # Handle fragment identifiers (#)
+    if '#' in path:
+        path = path.split('#')[1]  # Take the fragment part
+    else:
+        # Remove query parameters if no fragment
+        path = path.split('?')[0]
+    
+    # If path is empty after cleaning, return empty string
+    if not path:
+        return ''
+    
+    # Clean special characters and convert spaces
+    clean = re.sub(r'[^\w\s-]', '', path)
+    clean = re.sub(r'\s+', '_', clean.strip())
+    return clean.lower()
+
+async def process_url(url: str, output_dir: str, crawler: AsyncWebCrawler, job_id: str):
     """Process a single URL and save markdown"""
     try:
         result = await crawler.arun(
@@ -46,7 +75,15 @@ async def process_url(url: str, output_dir: str, crawler: AsyncWebCrawler):
             # Clean title for filename
             clean_title = re.sub(r'[^\w\s-]', '', title)
             clean_title = re.sub(r'\s+', '_', clean_title.strip())
-            filename = f"{clean_title.lower()}.md"
+            
+            # Get and clean URL path
+            path_suffix = clean_path(url, crawl_jobs[job_id]["base_url"])
+            
+            # Combine title and path for unique filename
+            filename = f"{clean_title.lower()}"
+            if path_suffix:
+                filename += f"_{path_suffix}"
+            filename += ".md"
             
             # Save markdown
             filepath = os.path.join(output_dir, filename)
@@ -65,6 +102,9 @@ async def crawl_website(job_id: str, url: str, limit: int):
         # Create output directory
         output_dir = f"output/output_{job_id}"
         os.makedirs(output_dir, exist_ok=True)
+        
+        # Store the base URL for this job
+        crawl_jobs[job_id]["base_url"] = url
         
         # Initialize crawler
         async with AsyncWebCrawler(verbose=True) as crawler:
@@ -85,7 +125,7 @@ async def crawl_website(job_id: str, url: str, limit: int):
                 })
                 
                 # Process URL and get internal links
-                internal_links = await process_url(current_url, output_dir, crawler)
+                internal_links = await process_url(current_url, output_dir, crawler, job_id)
                 processed_urls.add(current_url)
                 
                 # Add new internal links that contain the base URL
@@ -121,7 +161,8 @@ async def start_crawl(request: CrawlRequest):
     crawl_jobs[job_id] = {
         "status": "starting",
         "progress": 0,
-        "total_pages": 0
+        "total_pages": 0,
+        "base_url": request.url  # Store the base URL
     }
     
     # Start crawl in background
