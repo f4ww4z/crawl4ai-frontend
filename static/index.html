@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Crawl4AI Web Crawler - A powerful web crawling tool for automated data extraction and website analysis">
+  <meta name="keywords" content="web crawler, web scraping, data extraction, automation, AI, crawling tool">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Crawl4AI Web Crawler">
+  <meta property="og:description"
+    content="A powerful web crawling tool for automated data extraction and website analysis">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="/static/images/crawler-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Crawl4AI Web Crawler">
+  <meta name="twitter:description"
+    content="A powerful web crawling tool for automated data extraction and website analysis">
+  <link rel="canonical" href="https://crawl4ai.com">
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+  <title>Crawl4AI Web Crawler - Automated Web Scraping Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    [v-cloak] {
+      display: none;
+    }
+  </style>
+  <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "SoftwareApplication",
+                "name": "Crawl4AI Web Crawler",
+                "applicationCategory": "WebApplication",
+                "description": "A powerful web crawling tool for automated data extraction and website analysis",
+                "operatingSystem": "Any",
+                "offers": {
+                    "@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "USD"
+                }
+            }
+        </script>
+</head>
+
+<body class="bg-gray-50">
+  <div id="app" v-cloak class="w-full min-h-screen flex flex-col">
+    <header class="bg-white shadow">
+      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+          Crawl4AI Web Crawler
+        </h1>
+      </div>
+    </header>
+
+    <main class="w-full max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 flex-grow">
+      <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <form @submit.prevent="startCrawl" class="space-y-4">
+          <div>
+            <label for="url" class="block text-sm font-medium text-gray-700">
+              Website URL
+            </label>
+            <div class="mt-1">
+              <input type="url" name="url" id="url" v-model="url" required
+                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                placeholder="https://example.com" aria-label="Enter website URL to crawl">
+            </div>
+          </div>
+
+          <div>
+            <label for="limit" class="block text-sm font-medium text-gray-700">
+              Page Limit
+            </label>
+            <div class="mt-1">
+              <input type="number" name="limit" id="limit" v-model="limit" min="1" max="70"
+                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                aria-label="Set maximum number of pages to crawl">
+            </div>
+            <p class="mt-1 text-sm text-gray-500">
+              Maximum number of pages to crawl (default: 10, max: 70)
+            </p>
+          </div>
+
+          <div>
+            <button type="submit" :disabled="crawling"
+              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              aria-label="Start crawling website">
+              {{ crawling ? 'Crawling...' : 'Start Crawling' }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div v-if="jobStatus" class="bg-white shadow rounded-lg p-6" role="status" aria-live="polite">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">
+          Crawl Status
+        </h2>
+
+        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+          <div class="bg-indigo-600 h-2.5 rounded-full" :style="{ width: progressPercentage + '%' }" role="progressbar"
+            :aria-valuenow="progressPercentage" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <div class="space-y-2">
+          <p class="text-sm text-gray-600">
+            Status:
+            <span class="font-medium" :class="{
+                                    'text-yellow-600': jobStatus.status === 'processing',
+                                    'text-green-600': jobStatus.status === 'completed',
+                                    'text-red-600': jobStatus.status === 'failed'
+                                }">
+              {{ jobStatus.status }}
+            </span>
+          </p>
+          <p v-if="jobStatus.current_url" class="text-sm text-gray-600">
+            Current URL:
+            <span class="font-medium">
+              {{ jobStatus.current_url }}
+            </span>
+          </p>
+          <p class="text-sm text-gray-600">
+            Pages Processed:
+            <span class="font-medium">
+              {{ jobStatus.progress }}
+            </span>
+          </p>
+        </div>
+
+        <div v-if="jobStatus.status === 'completed'" class="mt-4">
+          <button @click="downloadResults"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            aria-label="Download crawl results">
+            Download Results
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="bg-white shadow mt-auto">
+      <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+        <p class="text-center text-sm text-gray-500">
+          © 2024 Crawl4AI. All rights reserved.
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          url: '',
+          limit: 10,
+          crawling: false,
+          jobId: null,
+          jobStatus: null,
+          statusInterval: null
+        };
+      },
+      computed: {
+        progressPercentage() {
+          if (!this.jobStatus || !this.jobStatus.total_pages) return 0;
+          return Math.min(100, (this.jobStatus.progress / this.limit) * 100);
+        }
+      },
+      methods: {
+        async startCrawl() {
+          this.crawling = true;
+          try {
+            const response = await fetch('/api/crawl', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                url: this.url,
+                limit: this.limit
+              }),
+            });
+            const data = await response.json();
+            this.jobId = data.job_id;
+            this.jobStatus = data;
+            this.startStatusPolling();
+          } catch (error) {
+            console.error('Error starting crawl:', error);
+            alert('Failed to start crawl');
+          }
+        },
+        async checkStatus() {
+          try {
+            const response = await fetch(`/api/status/${this.jobId}`);
+            const data = await response.json();
+            this.jobStatus = data;
+
+            if (data.status === 'completed' || data.status === 'failed') {
+              this.crawling = false;
+              this.stopStatusPolling();
+            }
+          } catch (error) {
+            console.error('Error checking status:', error);
+            this.stopStatusPolling();
+          }
+        },
+        startStatusPolling() {
+          this.statusInterval = setInterval(this.checkStatus, 1000);
+        },
+        stopStatusPolling() {
+          if (this.statusInterval) {
+            clearInterval(this.statusInterval);
+            this.statusInterval = null;
+          }
+        },
+        async downloadResults() {
+          window.location.href = `/api/download/${this.jobId}`;
+        }
+      },
+      beforeUnmount() {
+        this.stopStatusPolling();
+      }
+    }).mount('#app');
+  </script>
+</body>
+
+</html>

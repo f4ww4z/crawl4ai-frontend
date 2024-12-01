@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "crawl4ai-frontend"
+version = "0.1.0"
+description = "A frontend for crawl4ai"
+authors = ["f4ww4z"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Crawl4AI = "^0.3.746"
+fastapi = {extras = ["standard"], version = "^0.115.5"}
+aiofiles = "^24.1.0"
+
+[tool.poetry.dev-dependencies]
+autopep8 = "^2.3.1"
+djlint = "^1.36.3"
+
+[tool.djlint]
+convert_errors_to_warnings = true
+indent = 2
+
+[tool.djlint.js]
+warn_on_js_errors = true
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

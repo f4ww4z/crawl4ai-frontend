@@ -1,0 +1,8 @@
+services:
+  web:
+    build: .
+    ports:
+      - "${PORT}:8000"
+    volumes:
+      - ./output:/app/output
+    restart: unless-stopped
